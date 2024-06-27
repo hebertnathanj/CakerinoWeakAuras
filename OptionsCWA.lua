@@ -16,15 +16,15 @@ local function GetMainIcons(active_regions)
 
     if active_icons <= 0 then return end
 
-    return min(active_icons, config.main_icons.icons_max)
+    return min(active_icons, config.main.icons_max)
 end
 
 local function GetMainWidth(main_icons)
     if not main_icons then
         main_icons = GetMainIcons()
     end
-    local main_width = config.main_icons.width
-    local main_spacing = config.main_icons.spacing
+    local main_width = config.main.width
+    local main_spacing = config.main.spacing
     return (main_icons * (main_width + main_spacing))
 end
 
@@ -33,10 +33,10 @@ function CWA.GrowMain(new_positions, active_regions)
 
     if active_icons <= 0 then return end
 
-    local main_width = config.main_icons.width
-    local main_height = config.main_icons.height
-    local main_spacing = config.main_icons.spacing
-    local max_icons = min(active_icons, config.main_icons.icons_max)
+    local main_width = config.main.width
+    local main_height = config.main.height
+    local main_spacing = config.main.spacing
+    local max_icons = min(active_icons, config.main.icons_max)
     local icon_width = GetMainWidth(max_icons) + main_spacing
 
     local x,y
@@ -61,8 +61,8 @@ function CWA.GrowTrackers(new_positions, active_regions)
 
     local tracker_width = config.trackers.width
     local tracker_height = config.trackers.height
-    local tracker_spacing = config.tracers.spacing
-    local main_spacing = config.main.spacing
+    local tracker_spacing = config.trackers.spacing
+    local main_spacing = config.essentials.spacing
 end
 
 --Determines how utility icons grow
@@ -81,32 +81,19 @@ function CWA.GrowResource(new_positions, active_regions)
 
     if active_bars <= 0 then return end
 
-    local max_icons = min(config.main_icons.icons_max)
+    local max_icons = min(config.main.icons_max)
     local main_width = GetMainWidth(max_icons)
-    local resource_height = config.main.resource.height
-    local main_spacing = config.main_icons.spacing
+    local resource_height = config.essentials.resource.height
+    local main_spacing = config.main.spacing
 
 
     local resource_width, x, x_offset
     local childYOffset = aura_env.region.childYOffset or 0
 
     for i, region_data in ipairs(active_regions) do
-        --If there is more than 1 bar we need to account for each bars spacing on both sides
-        if active_bars > 1 then
-            --Adds the main spacing back into the main width to account for icon width, then subtracts main
-            --spain out of the bar width for the offset
             resource_width = ((main_width + main_spacing) / active_bars) - main_spacing
             x_offset = (main_width - resource_width) / 2
-
-            --Add back the spacing to the width
             x = (i - 1) * (resource_width + main_spacing) - x_offset
-        else
-            --Default case, no need to add spacing
-            resource_width = main_width / active_bars
-            x_offset = (main_width - resource_width) / 2
-            x = (i - 1) * resource_width - x_offset
-        end
-
         if not this.isImporting then
             SetRegionSize(region_data.region, resource_width, resource_height)
             region_data.region:SetYOffset(childYOffset + main_spacing)
