@@ -5,69 +5,69 @@ CWA = CWA or {}
 local this = aura_env
 local config = this.config
 local CLASS = this.id:gsub("Options | CakerinoWA |", "")
+
 local RESOURCES_GROUP = "Resources | CakerinoWA | " .. CLASS
 local MAIN_GROUP = "Main | CakerinoWA | " .. CLASS
+local UTILITY_GROUP = "Utility | CakerinoWA | " .. CLASS
+local TRACKERS_GROUP = "Trackers | CakerinoWA | " .. CLASS
+MAIN_WIDTH = 400
+MAIN_HEIGHT = 15
+NUM_ICONS = 0
 
 local function SetRegionSize(region, region_width, region_height)
     region:SetRegionWidth(region_width)
     region:SetRegionHeight(region_height)
 end
 
-local function GetMainIcons(active_regions)
-    local active_icons = #active_regions
-
-    if active_icons <= 0 then return end
-
-    return min(active_icons, config.main.icons_max)
+local function GetMainIcons()
+    return min(config.main.icons_max)
 end
 
-local function GetMainWidth(main_icons)
-    if not main_icons then
-        main_icons = GetMainIcons()
-    end
+local function GetMainWidth()
+    local main_icons = GetMainIcons()
     local main_width = config.main.width
     local main_spacing = config.main.spacing
-    return (main_icons * (main_width + main_spacing))
+
+    return (main_icons * (main_width + main_spacing) - main_spacing)
 end
 
 function CWA.GrowMain(new_positions, active_regions)
     local active_icons = #active_regions
-
+    NUM_ICONS = active_icons
     if active_icons <= 0 then return end
 
     local main_width = config.main.width
     local main_height = config.main.height
     local main_spacing = config.main.spacing
-    local max_icons = min(active_icons, config.main.icons_max)
-    local icon_width = GetMainWidth(max_icons) + main_spacing
+    local total_icons = min(GetMainIcons(), active_icons)
+    local oldWidth, oldHeight = MAIN_WIDTH, MAIN_HEIGHT
 
     local x,y
-    local x_offset = ((icon_width - main_width) / 2)
-    local y_offset = main_spacing
+    local x_offset = (total_icons - 1 ) * (main_width + main_spacing) / 2
+    local y_offset = 0
 
-    for i, regionData in ipairs(active_regions) do        
-        x = (i - 1) * (main_width + main_spacing) - x_offset + main_spacing
+    MAIN_HEIGHT = main_height
+    MAIN_WIDTH = total_icons * (main_width + main_spacing) - main_spacing
+
+    for i, regionData in ipairs(active_regions) do
+        x = (i - 1) * (main_width + main_spacing) - x_offset
         y = -y_offset
         SetRegionSize(regionData.region, main_width, main_height)
         new_positions[i]= {x, y}
 
-        if i == max_icons then break end
+        if i == total_icons then break end
     end
 end
 
 function CWA.GrowResource(new_positions, active_regions)
     local active_bars = #active_regions
-
     if active_bars <= 0 then return end
-    local region_group = WeakAuras.GetRegion(MAIN_GROUP)
-    
-    local max_icons = min(config.main.icons_max)
-    local main_width = GetMainWidth(max_icons)
-    local resource_height = config.essentials.resource.height
+
+    local main_width = GetMainWidth()
     local main_spacing = config.main.spacing
+    local resource_height = config.essentials.resource.height
+    local resource_width = (main_width / active_bars)
 
-
-    local resource_width = ((main_width + main_spacing) / active_bars) - main_spacing
     local x, y
     local x_offset = (main_width - resource_width) / 2
     local y_offset = (config.main.height / 2) + main_spacing + (resource_height / 2)
@@ -84,13 +84,11 @@ function CWA.GrowPower(new_positions, active_regions)
     local active_bars = #active_regions
     if active_bars <= 0 then return end
 
-    local max_icons = min(config.main.icons_max)
-    local main_width = GetMainWidth(max_icons)
+    local main_width = GetMainWidth()
     local power_height = config.essentials.power.height
     local main_spacing = config.main.spacing
 
-
-    local power_width = ((main_width + main_spacing) / active_bars) - main_spacing
+    local power_width = (main_width / (active_bars)) - main_spacing + (main_spacing / (active_bars))
     local x, y
     local x_offset = (main_width - power_width) / 2
     local y_offset = (config.main.height / 2) + main_spacing + (power_height / 2)
@@ -110,13 +108,11 @@ function CWA.GrowCastBar(new_positions, active_regions)
     local active_bars = #active_regions
     if active_bars <= 0 then return end
 
-    local max_icons = min(config.main.icons_max)
-    local main_width = GetMainWidth(max_icons)
-    local cast_bar_height = config.essentials.cast_bar.height
+    local main_width = GetMainWidth()
     local main_spacing = config.main.spacing
+    local cast_bar_width = (main_width / active_bars)
+    local cast_bar_height = config.essentials.cast_bar.height
 
-
-    local cast_bar_width = ((main_width + main_spacing) / active_bars) - main_spacing
     local x, y
     local x_offset = (main_width - cast_bar_width) / 2
     local y_offset = (config.main.height / 2) + main_spacing + (cast_bar_height / 2)
@@ -150,6 +146,3 @@ function CWA.GrowTrackers(new_positions, active_regions)
     local tracker_spacing = config.trackers.spacing
     local main_spacing = config.essentials.spacing
 end
-
-
-
